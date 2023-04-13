@@ -1,0 +1,1 @@
+# Obsidian AI Summary Plugin

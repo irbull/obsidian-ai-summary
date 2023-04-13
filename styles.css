@@ -1,0 +1,25 @@
+/*
+
+This CSS file will be included with your plugin, and
+available in the app when your plugin is enabled.
+
+If your plugin does not need CSS, delete this file.
+
+*/
+.item {
+  display: grid;
+  padding: 10px;
+  height: full;
+}
+
+.content {
+  display: table-cell;
+  height: 500px;
+  padding: 10px;
+  font-size: 16px;
+  line-height: 1.5;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  resize: none;
+  vertical-align: top;
+}
