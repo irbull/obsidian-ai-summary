@@ -3,7 +3,7 @@
 	"name": "AI Notes Summary",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "This plugin uses ChatGPT to generate a summary of referenced notes.",
+	"description": "This plugin uses OpenAI GPT 3.5 to generate a summary of referenced notes.",
 	"author": "R. Ian Bull",
 	"authorUrl": "https://ianbull.com",
 	"isDesktopOnly": false
