@@ -14,11 +14,13 @@ import { ResultDialog } from "src/ui/result_dialog";
 
 interface AiSummaryPluginSettings {
   openAiApiKey: string;
+  maxTokens: number;
   defaultPrompt: string;
 }
 
 const DEFAULT_SETTINGS: AiSummaryPluginSettings = {
   openAiApiKey: "",
+  maxTokens: 2000,
   defaultPrompt:
     "Write me a 2-3 paragraph summary of this in the first person.",
 };
@@ -56,6 +58,7 @@ export default class AiSummaryPlugin extends Plugin {
         frontMatter["prompt"] ?? this.settings.defaultPrompt,
       ),
       this.settings.openAiApiKey,
+      this.settings.maxTokens,
       dialog,
     );
     return "Weekly summary written.";
@@ -178,6 +181,19 @@ class AiSummarySettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.openAiApiKey)
           .onChange(async (value) => {
             this.plugin.settings.openAiApiKey = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Max Tokens")
+      .setDesc("Max Tokens")
+      .addText((text) =>
+        text
+          .setPlaceholder("2000")
+          .setValue(this.plugin.settings.maxTokens.toString())
+          .onChange(async (value) => {
+            this.plugin.settings.maxTokens = Number.parseInt(value);
             await this.plugin.saveSettings();
           })
       );

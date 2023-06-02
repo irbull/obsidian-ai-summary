@@ -14,7 +14,7 @@ export class ResultDialog extends Modal {
     const { contentEl } = this;
     const container = contentEl.createEl("div", { cls: "item" });
     this.text = container.createEl("textarea", { cls: "content" });
-    this.text.placeholder = "Enter some text";
+    this.text.placeholder = "...";
   }
 
   onClose() {

@@ -8,6 +8,7 @@ interface GPTResponse {
 export async function promptGPTChat(
   prompt: string,
   apiKey: string,
+  maxTokens: number,
   dialog: ResultDialog,
 ) {
   const requestOptions = {
@@ -20,7 +21,7 @@ export async function promptGPTChat(
       "messages": [{ "role": "system", "content": prompt }],
       model: "gpt-3.5-turbo",
       temperature: 0.7,
-      max_tokens: 1000,
+      max_tokens: maxTokens,
       top_p: 1,
       frequency_penalty: 0,
       presence_penalty: 0,
