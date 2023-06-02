@@ -6,5 +6,5 @@
 	"description": "This plugin uses OpenAI GPT 3.5 to generate a summary of referenced notes.",
 	"author": "R. Ian Bull",
 	"authorUrl": "https://ianbull.com",
-	"isDesktopOnly": false
+	"isDesktopOnly": true
 }
