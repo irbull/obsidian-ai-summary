@@ -39,22 +39,21 @@ export default class AiSummaryPlugin extends Plugin {
     );
 
     const file = markdownView?.file;
-    if (!file) return "Weekly note not open.";
+    if (!file) return "No note open.";
 
     const content = await vault.cachedRead(file);
     const frontMatter = this.extractFrontmatter(content);
 
-    const dailyNotes = await this.getReferencedContent(content, file);
-    if (!dailyNotes) return "Weekly note not open.";
-    if (dailyNotes.length === 0) {
+    const referencedNotes = await this.getReferencedContent(content, file);
+    if (!referencedNotes || referencedNotes.length === 0) {
       dialog.addContent(
-        "No daily notes found. Please add a link to a daily note in the weekly note.",
+        "No referenced notes found.",
       );
-      return "No daily notes found.";
+      return "No referenced notes found.";
     }
     const summary = await promptGPTChat(
       this.generateGPTPrompt(
-        dailyNotes,
+        referencedNotes,
         frontMatter["prompt"] ?? this.settings.defaultPrompt,
       ),
       this.settings.openAiApiKey,
@@ -77,7 +76,7 @@ export default class AiSummaryPlugin extends Plugin {
     content: string,
     currentFile: TFile,
   ): Promise<string[] | undefined> {
-    const dailyNotes: string[] = [];
+    const referencedNotes: string[] = [];
     const lines = content.split("\n");
     for (const line of lines) {
       if (line.includes("[[") && line.includes("]]")) {
@@ -87,11 +86,11 @@ export default class AiSummaryPlugin extends Plugin {
             dailyNoteLink,
             currentFile.path,
           );
-          dailyNotes.push(await this.readContents(dailyNote));
+          referencedNotes.push(await this.readContents(dailyNote));
         }
       }
     }
-    return dailyNotes;
+    return referencedNotes;
   }
 
   async readContents(dailyNoteLink: TFile | null) {
@@ -140,6 +139,15 @@ export default class AiSummaryPlugin extends Plugin {
         new Notice(resultSummary);
       },
     );
+
+    this.addCommand({
+      id: "ai-summary",
+      name: "Summarize referenced notes",
+      callback: async () => {
+        const resultSummary = await this.generateSummary();
+        new Notice(resultSummary);
+      },
+    });
 
     // This adds a settings tab so the user can configure various aspects of the plugin
     this.addSettingTab(new AiSummarySettingTab(this.app, this));
