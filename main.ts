@@ -51,7 +51,7 @@ export default class AiSummaryPlugin extends Plugin {
       );
       return "No referenced notes found.";
     }
-    const summary = await promptGPTChat(
+    await promptGPTChat(
       this.generateGPTPrompt(
         referencedNotes,
         frontMatter["prompt"] ?? this.settings.defaultPrompt,
@@ -60,11 +60,11 @@ export default class AiSummaryPlugin extends Plugin {
       this.settings.maxTokens,
       dialog,
     );
-    return "Weekly summary written.";
+    return "Summary written.";
   }
 
   generateGPTPrompt(notes: string[], queryPrompt: string): string {
-    let prompt: string = "";
+    let prompt = "";
     for (const note of notes) {
       prompt += note;
       prompt += "----";
@@ -80,23 +80,23 @@ export default class AiSummaryPlugin extends Plugin {
     const lines = content.split("\n");
     for (const line of lines) {
       if (line.includes("[[") && line.includes("]]")) {
-        const dailyNoteLinks = this.extractTextBetweenBrackets(line);
-        for (const dailyNoteLink of dailyNoteLinks) {
-          const dailyNote = this.app.metadataCache.getFirstLinkpathDest(
-            dailyNoteLink,
+        const links = this.extractTextBetweenBrackets(line);
+        for (const link of links) {
+          const noteLink = this.app.metadataCache.getFirstLinkpathDest(
+            link,
             currentFile.path,
           );
-          referencedNotes.push(await this.readContents(dailyNote));
+          referencedNotes.push(await this.readContents(noteLink));
         }
       }
     }
     return referencedNotes;
   }
 
-  async readContents(dailyNoteLink: TFile | null) {
-    if (dailyNoteLink) {
+  async readContents(note: TFile | null) {
+    if (note) {
       const adapter = this.app.vault.adapter as FileSystemAdapter;
-      return await adapter.read(dailyNoteLink.path);
+      return await adapter.read(note.path);
     }
     return "";
   }
