@@ -12,6 +12,7 @@ import {
 import { promptGPTChat } from "src/gpt";
 import { ResultDialog } from "src/ui/result_dialog";
 
+const defaultMaxTokens = 2000;
 interface AiSummaryPluginSettings {
   openAiApiKey: string;
   maxTokens: number;
@@ -20,7 +21,7 @@ interface AiSummaryPluginSettings {
 
 const DEFAULT_SETTINGS: AiSummaryPluginSettings = {
   openAiApiKey: "",
-  maxTokens: 2000,
+  maxTokens: defaultMaxTokens,
   defaultPrompt:
     "Write me a 2-3 paragraph summary of this in the first person.",
 };
@@ -198,8 +199,11 @@ class AiSummarySettingTab extends PluginSettingTab {
       .setDesc("Max Tokens")
       .addText((text) =>
         text
-          .setPlaceholder("2000")
-          .setValue(this.plugin.settings.maxTokens.toString())
+          .setPlaceholder(defaultMaxTokens.toString())
+          .setValue(
+            this.plugin.settings.maxTokens?.toString() ||
+              defaultMaxTokens.toString(),
+          )
           .onChange(async (value) => {
             this.plugin.settings.maxTokens = Number.parseInt(value);
             await this.plugin.saveSettings();
