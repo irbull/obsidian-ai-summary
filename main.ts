@@ -96,8 +96,7 @@ export default class AiSummaryPlugin extends Plugin {
 
   async readContents(note: TFile | null) {
     if (note) {
-      const adapter = this.app.vault.adapter as FileSystemAdapter;
-      return await adapter.read(note.path);
+      return await this.app.vault.read(note);
     }
     return "";
   }
