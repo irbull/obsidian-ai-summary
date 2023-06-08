@@ -205,8 +205,8 @@ class AiSummarySettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Max Tokens")
-      .setDesc("Max Tokens")
+      .setName("Max tokens")
+      .setDesc("Max tokens")
       .addText((text) =>
         text
           .setPlaceholder(defaultMaxTokens.toString())
