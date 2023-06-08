@@ -6,13 +6,13 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
-.item {
+.ai-summary-container {
   display: grid;
   padding: 10px;
   height: full;
 }
 
-.content {
+.ai-summary-textarea {
   display: table-cell;
   height: 500px;
   padding: 10px;

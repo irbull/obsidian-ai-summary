@@ -12,8 +12,10 @@ export class ResultDialog extends Modal {
 
   onOpen() {
     const { contentEl } = this;
-    const container = contentEl.createEl("div", { cls: "item" });
-    this.text = container.createEl("textarea", { cls: "content" });
+    const container = contentEl.createEl("div", {
+      cls: "ai-summary-container",
+    });
+    this.text = container.createEl("textarea", { cls: "ai-summary-textarea" });
     this.text.placeholder = "...";
   }
 
