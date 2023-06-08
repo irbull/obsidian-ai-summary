@@ -64,6 +64,13 @@ export default class AiSummaryPlugin extends Plugin {
     return "Summary written.";
   }
 
+  hasOpenNote(): boolean {
+    const markdownView = this.app.workspace.getActiveViewOfType(
+      MarkdownView,
+    );
+    return !!markdownView?.file;
+  }
+
   generateGPTPrompt(notes: string[], queryPrompt: string): string {
     let prompt = "";
     for (const note of notes) {
@@ -143,9 +150,13 @@ export default class AiSummaryPlugin extends Plugin {
     this.addCommand({
       id: "ai-summary",
       name: "Summarize referenced notes",
-      callback: async () => {
-        const resultSummary = await this.generateSummary();
-        new Notice(resultSummary);
+      checkCallback: (checking: boolean) => {
+        if (checking) {
+          return this.hasOpenNote();
+        }
+        (async () => {
+          new Notice(await this.generateSummary());
+        })();
       },
     });
 
