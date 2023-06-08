@@ -3,7 +3,7 @@
 	"name": "AI Notes Summary",
 	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
-	"description": "This plugin uses OpenAI to generate a summary of referenced notes.",
+	"description": "Summarize referenced notes using OpenAI.",
 	"author": "R. Ian Bull",
 	"authorUrl": "https://ianbull.com",
 	"isDesktopOnly": true

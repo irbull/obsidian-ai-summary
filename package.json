@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-ai-summary",
 	"version": "1.0.1",
-	"description": "This plugin uses ChatGPT to generate a summary of referenced notes.",
+	"description": "Summarize referenced notes using OpenAI.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
