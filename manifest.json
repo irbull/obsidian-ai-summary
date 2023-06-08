@@ -1,7 +1,7 @@
 {
 	"id": "ai-summary",
 	"name": "AI Notes Summary",
-	"version": "1.0.1",
+	"version": "1.0.3",
 	"minAppVersion": "0.15.0",
 	"description": "Summarize referenced notes using OpenAI.",
 	"author": "R. Ian Bull",
