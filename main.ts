@@ -15,12 +15,14 @@ import { ResultDialog } from "src/ui/result_dialog";
 const defaultMaxTokens = 2000;
 interface AiSummaryPluginSettings {
   openAiApiKey: string;
+  model: string;
   maxTokens: number;
   defaultPrompt: string;
 }
 
 const DEFAULT_SETTINGS: AiSummaryPluginSettings = {
   openAiApiKey: "",
+  model: "gpt-3.5-turbo",
   maxTokens: defaultMaxTokens,
   defaultPrompt:
     "Write me a 2-3 paragraph summary of this in the first person.",
@@ -35,9 +37,7 @@ export default class AiSummaryPlugin extends Plugin {
 
     const { vault } = this.app;
 
-    const markdownView = this.app.workspace.getActiveViewOfType(
-      MarkdownView,
-    );
+    const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
 
     const file = markdownView?.file;
     if (!file) return "No note open.";
@@ -47,27 +47,24 @@ export default class AiSummaryPlugin extends Plugin {
 
     const referencedNotes = await this.getReferencedContent(content, file);
     if (!referencedNotes || referencedNotes.length === 0) {
-      dialog.addContent(
-        "No referenced notes found.",
-      );
+      dialog.addContent("No referenced notes found.");
       return "No referenced notes found.";
     }
     await promptGPTChat(
       this.generateGPTPrompt(
         referencedNotes,
-        frontMatter["prompt"] ?? this.settings.defaultPrompt,
+        frontMatter["prompt"] ?? this.settings.defaultPrompt
       ),
       this.settings.openAiApiKey,
+      this.settings.model,
       this.settings.maxTokens,
-      dialog,
+      dialog
     );
     return "Summary written.";
   }
 
   hasOpenNote(): boolean {
-    const markdownView = this.app.workspace.getActiveViewOfType(
-      MarkdownView,
-    );
+    const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
     return !!markdownView?.file;
   }
 
@@ -82,7 +79,7 @@ export default class AiSummaryPlugin extends Plugin {
 
   async getReferencedContent(
     content: string,
-    currentFile: TFile,
+    currentFile: TFile
   ): Promise<string[] | undefined> {
     const referencedNotes: string[] = [];
     const lines = content.split("\n");
@@ -92,7 +89,7 @@ export default class AiSummaryPlugin extends Plugin {
         for (const link of links) {
           const noteLink = this.app.metadataCache.getFirstLinkpathDest(
             link,
-            currentFile.path,
+            currentFile.path
           );
           referencedNotes.push(await this.readContents(noteLink));
         }
@@ -138,14 +135,10 @@ export default class AiSummaryPlugin extends Plugin {
   async onload() {
     await this.loadSettings();
 
-    this.addRibbonIcon(
-      "pencil",
-      "Summarize referenced notes",
-      async () => {
-        const resultSummary = await this.generateSummary();
-        new Notice(resultSummary);
-      },
-    );
+    this.addRibbonIcon("pencil", "Summarize referenced notes", async () => {
+      const resultSummary = await this.generateSummary();
+      new Notice(resultSummary);
+    });
 
     this.addCommand({
       id: "ai-summary",
@@ -164,8 +157,7 @@ export default class AiSummaryPlugin extends Plugin {
     this.addSettingTab(new AiSummarySettingTab(this.app, this));
   }
 
-  onunload() {
-  }
+  onunload() {}
 
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
@@ -205,6 +197,20 @@ class AiSummarySettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
+      .setName("Model")
+      .setDesc("Select the model")
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("gpt-3.5-turbo", "gpt-3.5-turbo (16k)")
+          .addOption("gpt-4-turbo-preview", "gpt-4-turbo-preview (128k)")
+          .setValue(this.plugin.settings.model)
+          .onChange(async (value) => {
+            this.plugin.settings.model = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
       .setName("Max tokens")
       .setDesc("Max tokens")
       .addText((text) =>
@@ -212,7 +218,7 @@ class AiSummarySettingTab extends PluginSettingTab {
           .setPlaceholder(defaultMaxTokens.toString())
           .setValue(
             this.plugin.settings.maxTokens?.toString() ||
-              defaultMaxTokens.toString(),
+              defaultMaxTokens.toString()
           )
           .onChange(async (value) => {
             this.plugin.settings.maxTokens = Number.parseInt(value);

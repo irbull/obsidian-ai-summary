@@ -8,8 +8,9 @@ interface GPTResponse {
 export async function promptGPTChat(
   prompt: string,
   apiKey: string,
+  model: string,
   maxTokens: number,
-  dialog: ResultDialog,
+  dialog: ResultDialog
 ) {
   const requestOptions = {
     method: "POST",
@@ -18,8 +19,8 @@ export async function promptGPTChat(
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      "messages": [{ "role": "system", "content": prompt }],
-      model: "gpt-3.5-turbo",
+      messages: [{ role: "system", content: prompt }],
+      model: model,
       temperature: 0.7,
       max_tokens: maxTokens,
       top_p: 1,
@@ -30,7 +31,8 @@ export async function promptGPTChat(
   };
 
   const response = await fetch(url, requestOptions);
-  const reader = response.body?.pipeThrough(new TextDecoderStream())
+  const reader = response.body
+    ?.pipeThrough(new TextDecoderStream())
     .getReader();
   let content = "";
   let gotDoneMessage = false;
