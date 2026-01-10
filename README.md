@@ -25,7 +25,7 @@ To run this plugin locally, follow these steps:
 1. Clone this repository.
 2. Run `npm install` to install the dependencies.
 3. Run `npm run build` to build the plugin.
-4. Copy the `main.js`,`manifest.json` file to your `.obsidian/plugins/obsidian-ai-summary` directory. (If u don't sure where to put it, just create a new folder called `obsidian-ai-summary` in your `.obsidian/plugins` directory, or copy this repo to your `.obsidian/plugins` directory and run `npm run build`)
+4. Copy the `main.js`,`manifest.json` file to your `.obsidian/plugins/obsidian-ai-summary` directory. (If you are not sure where to put it, create a new folder called `obsidian-ai-summary` in your `.obsidian/plugins` directory, or copy this repo to your `.obsidian/plugins` directory and run `npm run build`)
 5. Restart Obsidian.
 6. Open plugin settings and turn on the plugin.
 7. Try it out!
