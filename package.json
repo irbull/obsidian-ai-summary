@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-ai-summary",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"description": "Summarize referenced notes using OpenAI.",
 	"main": "main.js",
 	"scripts": {
