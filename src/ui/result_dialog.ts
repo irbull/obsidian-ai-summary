@@ -12,6 +12,7 @@ export class ResultDialog extends Modal {
 
   onOpen() {
     const { contentEl } = this;
+    contentEl.createEl("h4", { text: "LLM Summary", cls: "ai-summary-title" });
     const container = contentEl.createEl("div", {
       cls: "ai-summary-container",
     });

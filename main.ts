@@ -15,6 +15,7 @@ import { ResultDialog } from "src/ui/result_dialog";
 const defaultMaxTokens = 2000;
 interface AiSummaryPluginSettings {
   openAiApiKey: string;
+  baseUrl: string;
   model: string;
   maxTokens: number;
   defaultPrompt: string;
@@ -22,6 +23,7 @@ interface AiSummaryPluginSettings {
 
 const DEFAULT_SETTINGS: AiSummaryPluginSettings = {
   openAiApiKey: "",
+  baseUrl: "https://api.openai.com/v1",
   model: "gpt-3.5-turbo",
   maxTokens: defaultMaxTokens,
   defaultPrompt:
@@ -35,32 +37,82 @@ export default class AiSummaryPlugin extends Plugin {
     const dialog = new ResultDialog(this.app);
     dialog.open();
 
-    const { vault } = this.app;
+    try {
+      const { vault } = this.app;
 
-    const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+      const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
 
-    const file = markdownView?.file;
-    if (!file) return "No note open.";
+      const file = markdownView?.file;
+      if (!file) {
+        dialog.addContent("[AI-SUMMARY] Error: No note is currently open.");
+        return "No note open.";
+      }
 
-    const content = await vault.cachedRead(file);
-    const frontMatter = this.extractFrontmatter(content);
+      const content = await vault.cachedRead(file);
+      const frontMatter = this.extractFrontmatter(content);
 
-    const referencedNotes = await this.getReferencedContent(content, file);
-    if (!referencedNotes || referencedNotes.length === 0) {
-      dialog.addContent("No referenced notes found.");
-      return "No referenced notes found.";
+      const referencedNotes = await this.getReferencedContent(content, file);
+      if (!referencedNotes || referencedNotes.length === 0) {
+        dialog.addContent("[AI-SUMMARY] No referenced notes found.");
+        return "No referenced notes found.";
+      }
+
+      await promptGPTChat(
+        frontMatter["prompt"] ?? this.settings.defaultPrompt,
+        this.generateGPTPrompt(referencedNotes),
+        this.settings.openAiApiKey,
+        this.settings.baseUrl,
+        this.settings.model,
+        this.settings.maxTokens,
+        dialog
+      );
+      return "Summary written.";
+    } catch (error) {
+      console.error("[AI-SUMMARY] Error generating summary:", error);
+      dialog.addContent(`[AI-SUMMARY] Error: Failed to generate summary - ${error.message}`);
+      return "Failed to generate summary.";
     }
-    await promptGPTChat(
-      this.generateGPTPrompt(
-        referencedNotes,
-        frontMatter["prompt"] ?? this.settings.defaultPrompt
-      ),
-      this.settings.openAiApiKey,
-      this.settings.model,
-      this.settings.maxTokens,
-      dialog
-    );
-    return "Summary written.";
+  }
+
+  async summarizeCurrentDocument(): Promise<string> {
+    const dialog = new ResultDialog(this.app);
+    dialog.open();
+
+    try {
+      const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+      const file = markdownView?.file;
+      if (!file) {
+        dialog.addContent("[AI-SUMMARY] Error: No note is currently open.");
+        return "No note open.";
+      }
+
+      const content = await this.app.vault.cachedRead(file);
+      const frontMatter = this.extractFrontmatter(content);
+
+      // Remove frontmatter from content for summarization
+      const contentWithoutFrontmatter = content.replace(/^---\n[\s\S]*?\n---\n/, '');
+
+      if (!contentWithoutFrontmatter.trim()) {
+        dialog.addContent("[AI-SUMMARY] The current document is empty.");
+        return "The current document is empty.";
+      }
+
+      await promptGPTChat(
+        frontMatter["prompt"] ?? this.settings.defaultPrompt,
+        contentWithoutFrontmatter,
+        this.settings.openAiApiKey,
+        this.settings.baseUrl,
+        this.settings.model,
+        this.settings.maxTokens,
+        dialog
+      );
+
+      return "Document summary generated.";
+    } catch (error) {
+      console.error("[AI-SUMMARY] Error generating document summary:", error);
+      dialog.addContent(`[AI-SUMMARY] Error: Failed to generate document summary - ${error.message}`);
+      return "Failed to generate document summary.";
+    }
   }
 
   hasOpenNote(): boolean {
@@ -68,13 +120,13 @@ export default class AiSummaryPlugin extends Plugin {
     return !!markdownView?.file;
   }
 
-  generateGPTPrompt(notes: string[], queryPrompt: string): string {
+  generateGPTPrompt(notes: string[]): string {
     let prompt = "";
     for (const note of notes) {
       prompt += note;
       prompt += "----";
     }
-    return prompt + queryPrompt;
+    return prompt;
   }
 
   async getReferencedContent(
@@ -153,6 +205,19 @@ export default class AiSummaryPlugin extends Plugin {
       },
     });
 
+    this.addCommand({
+      id: "summarize-current-document",
+      name: "Summarize current document",
+      checkCallback: (checking: boolean) => {
+        if (checking) {
+          return this.hasOpenNote();
+        }
+        (async () => {
+          new Notice(await this.summarizeCurrentDocument());
+        })();
+      },
+    });
+
     // This adds a settings tab so the user can configure various aspects of the plugin
     this.addSettingTab(new AiSummarySettingTab(this.app, this));
   }
@@ -197,12 +262,24 @@ class AiSummarySettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
+      .setName("Base URL")
+      .setDesc("Base URL for API requests")
+      .addText((text) =>
+        text
+          .setPlaceholder("https://api.openai.com/v1")
+          .setValue(this.plugin.settings.baseUrl)
+          .onChange(async (value) => {
+            this.plugin.settings.baseUrl = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
       .setName("Model")
-      .setDesc("Select the model")
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOption("gpt-3.5-turbo", "gpt-3.5-turbo (16k)")
-          .addOption("gpt-4-turbo-preview", "gpt-4-turbo-preview (128k)")
+      .setDesc("Enter the model name")
+      .addText((text) =>
+        text
+          .setPlaceholder("gpt-3.5-turbo")
           .setValue(this.plugin.settings.model)
           .onChange(async (value) => {
             this.plugin.settings.model = value;
@@ -228,7 +305,7 @@ class AiSummarySettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Default prompt")
-      .setDesc("Default prompt")
+      .setDesc("Default system prompt")
       .addTextArea((text) =>
         text
           .setPlaceholder("Prompt")

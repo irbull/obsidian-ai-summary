@@ -18,6 +18,20 @@ To use this plugin, you will need to have an OpenAI API key. You can get one fro
 
 Once installed and configured, open a note with links to other notes. Then select the `Summarize referenced notes` command from the command palette.
 
+### Local Installation & Development
+
+To run this plugin locally, follow these steps:
+
+1. Clone this repository.
+2. Run `npm install` to install the dependencies.
+3. Run `npm run build` to build the plugin.
+4. Copy the `main.js`,`manifest.json` file to your `.obsidian/plugins/obsidian-ai-summary` directory. (If u don't sure where to put it, just create a new folder called `obsidian-ai-summary` in your `.obsidian/plugins` directory, or copy this repo to your `.obsidian/plugins` directory and run `npm run build`)
+5. Restart Obsidian.
+6. Open plugin settings and turn on the plugin.
+7. Try it out!
+
+In obsidian, you can use Ctrl+Shift+I (Windows/Linux) or Cmd+Option+I (macOS) to open the developer console.
+
 ## 💪 Example Usage
 
 The Obsidian AI Summary Plugin can be used to generate weekly summaries of your note. For example, if you create a weekly note called `2023-W01` with the following content:
